@@ -14,15 +14,37 @@ export const redisProviders = [
         let client = createClient({ url : REDIS_URL });
      
         console.log(`Redis url : `, REDIS_URL) 
+
+        const connectClient = async () => {
+            try {
+              await client.connect();
+              console.info('Redis Client connected successfully.');
+            } catch (err) {
+              console.error('Redis Client connection failed', err);
+            }
+          }
     
-        client.on('error', (err) => {
+        client.on('error', async(err) => {
             console.error('Redis Client Error', err); 
-            client.quit() 
+            try {
+                if (client.isOpen) {
+                    await client.quit();
+                }
+
+            } catch(e) {
+                 console.log(e)
+            }
             console.info("Reconnect Redis after 5 seconds...");
-            setTimeout(() => {
-                console.info("Reconnecting to Redis...");
-                client = createClient({ url : REDIS_URL })
-            }, 5000); // Reconnect after 5 seconds, adjust as needed
+            setTimeout(async () => {
+                console.info('Reconnecting to Redis...');
+                try {
+                  client = createClient({ url: REDIS_URL });
+                  await client.connect();
+                  console.info('Reconnected to Redis successfully.');
+                } catch (reconnectErr) {
+                  console.error('Reconnection to Redis failed', reconnectErr);
+                }
+              }, 5000); // Reconnect after 5 seconds, adjust as needed
         })
     
         client.on('connect', (message) => console.info("Redis Client Connect successfully"))
@@ -34,7 +56,38 @@ export const redisProviders = [
         client.on("ready", (err) => console.info("Redis up! Now connecting the worker queue client...") )
     
         await client.connect();
+
+        const performOperationWithReconnect = async (operation) => {
+            try {
+              return await operation();
+            } catch(err) {
+              if (err.code === 'ECONNREFUSED' || err.code === 'NR_CLOSED') {
+                console.error('Redis Client connection closed during operation, reconnecting...', err);
+                await client.quit();
+                client = createClient({ url: REDIS_URL });
+                await connectClient();
+                return await operation();
+              } else {
+                throw err;
+              }
+            }
+          }
     
-        return client
+        // return client
+
+        return {
+            getClient: () => client,
+            get: async (key) => {
+               return await performOperationWithReconnect(() => client.get(key));
+            },
+            set: async (key, value) => {
+               return await performOperationWithReconnect(() => client.set(key, value));
+            },
+            setEx:async (key, time, value) => {
+                return await performOperationWithReconnect(() => client.setEx(key,time, value))
+             },
+            // Add other Redis operations as needed
+        }
+
      }
 }]
