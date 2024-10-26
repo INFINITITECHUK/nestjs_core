@@ -12,6 +12,14 @@
     "baseUrl": "./",
     "incremental": true,
 
-    "esModuleInterop": true
+    "esModuleInterop": true,
+    "paths": {
+      "@helpers/*": [
+        "./src/helpers/*"
+      ],
+      "@config/*": [
+        "./src/config/*"
+      ]
+    }
   }
 }

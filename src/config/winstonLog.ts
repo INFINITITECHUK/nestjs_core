@@ -2,7 +2,8 @@ import {LoggerService } from '@nestjs/common';
 import { WinstonModule } from 'nest-winston';
 import winston, { createLogger, format, transports, LoggerOptions} from 'winston'
 import DailyRotateFile from 'winston-daily-rotate-file'
-
+import { SequelizeTransport } from './sequelize-transport'; // Ensure this path is correct
+import { sequelizeWriteInstance as sequelize } from './sequelize-instance'; // Ensure this path is correct
 
 const { combine, timestamp, label, printf, prettyPrint,errors,colorize  } = format
 
@@ -19,7 +20,7 @@ const infotransport = new DailyRotateFile({
                     handleExceptions: true,
                     zippedArchive: true,
                     maxSize: '20m',
-                    //maxFiles: '14d'
+                    maxFiles: '14d'
 
 })
 
@@ -31,35 +32,34 @@ const errortransport = new DailyRotateFile({
           handleExceptions: true,
           zippedArchive: true,
           maxSize: '20m',
-          //maxFiles: '14d'
+          maxFiles: '14d'
 
-        })
+})
 
-        const myConfig = {
-          levels: {
-            error: 0,
-            warn: 1,
-            data: 2,
-            info: 3,
-            debug: 4,
-            verbose: 5,
-            silly: 6,
-            http: 7
-          },
-          colors: {
-            error: 'red',
-            warn: 'orange',
-            data: 'grey',
-            info: 'green',
-            debug: 'yellow',
-            verbose: 'cyan',
-            silly: 'magenta',
-            http: 'magenta' 
-          },
-        };
+const myConfig = {
+  levels: {
+    error: 0,
+    warn: 1,
+    data: 2,
+    info: 3,
+    debug: 4,
+    verbose: 5,
+    silly: 6,
+    http: 7
+  },
+  colors: {
+    error: 'red',
+    warn: 'orange',
+    data: 'grey',
+    info: 'green',
+    debug: 'yellow',
+    verbose: 'cyan',
+    silly: 'magenta',
+    http: 'magenta' 
+  },
+}
 
 const myConfiglevelsKeyArray = Object.keys(myConfig.levels)
-
 
 const winstonLogOptions = { 
           levels: myConfig.levels,
@@ -80,9 +80,9 @@ const winstonLogOptions = {
             }),
             infotransport,
             errortransport,
-
+            new SequelizeTransport({ sequelize })
           ]
-        }
+}
 
 export const winstonLog = createLogger({...winstonLogOptions})
 

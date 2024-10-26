@@ -9,7 +9,7 @@ export interface IDatabaseConfigAttributes {
     urlDatabase?: string;
     define ?: object;
     pool ?: object;
-    logging ? : boolean;
+    logging ? : SequelizeLoggingFunction
     dialectOptions ? : object ;
     timezone ? : string;
 }
@@ -19,3 +19,10 @@ export interface IDatabaseConfig {
     test: IDatabaseConfigAttributes;
     production: IDatabaseConfigAttributes;
 }
+
+
+
+export interface SequelizeLoggingFunction {
+    (msg: string): void; // Logging function takes a string message and returns void
+}
+  

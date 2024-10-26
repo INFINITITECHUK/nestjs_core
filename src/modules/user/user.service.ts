@@ -29,8 +29,13 @@ export class UserService {
         // return await this.DB.query(`EXEC SW_PROC_CURRENCY @Flag = 'GetActiveList'`)
         // this.redisClient.setEx(`roblll`,3600, JSON.stringify({ll: 222}))
 
-        return this.redisClient.get('roblll')
+        const f = await this.redisClient.get('roblll')
+        const fs = await this.redisClient.get('roblllex')
 
+        // this.redisClient.set('roblll', JSON.stringify({ll: 2233332}))
+        // this.redisClient.setEx(`roblllex`,3600, JSON.stringify({ll: 222}))
+
+        console.log('f => ',f, ' fs => ', fs)
     }
 }
 

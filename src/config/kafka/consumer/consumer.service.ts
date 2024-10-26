@@ -1,6 +1,10 @@
 import {Injectable,OnApplicationShutdown} from '@nestjs/common'
 import {Consumer,ConsumerRunConfig,ConsumerSubscribeTopic,Kafka} from 'kafkajs'
-  
+import { decrypt } from '@helpers/cipher';
+
+const IS_CRD_PLAIN = process.env.IS_CRD_PLAIN == 'true' ? true : false
+const KAFKA_BROKERS = IS_CRD_PLAIN ? process.env.KAFKA_BROKERS : decrypt(process.env.KAFKA_BROKERS)
+
 //read message from a topic..
 @Injectable()
 export class ConsumerService implements OnApplicationShutdown {
@@ -11,7 +15,7 @@ export class ConsumerService implements OnApplicationShutdown {
     }
 
     private readonly kafka = new Kafka({
-        brokers: [process.env.KAFKA_BROKERS],
+        brokers: [KAFKA_BROKERS],
     })
 
     private readonly consumers: Consumer[] = []

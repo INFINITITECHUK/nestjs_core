@@ -50,3 +50,7 @@ export const databaseProviders = [
         return sequelize
     }
 }];
+
+export const sequelizeWriteInstance = (async () => {
+    return await databaseProviders[0].useFactory();
+  })();

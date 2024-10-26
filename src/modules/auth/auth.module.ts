@@ -5,12 +5,16 @@ import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
 import { LocalStrategy } from './local.strategy';
 import { JwtStrategy } from './jwt.strategy';
+import { decrypt } from '@helpers/cipher';
+
+const IS_CRD_PLAIN = process.env.IS_CRD_PLAIN == 'true' ? true : false
+const JWTKEY = IS_CRD_PLAIN ? process.env.JWTKEY : decrypt(process.env.JWTKEY)
 
 @Module({
     imports: [
         PassportModule,
         JwtModule.register({
-            secret: process.env.JWTKEY,
+            secret: JWTKEY,
             signOptions: { expiresIn: process.env.TOKEN_EXPIRATION },
         }),
     ],
