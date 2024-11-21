@@ -80,7 +80,8 @@ const winstonLogOptions = {
             }),
             infotransport,
             errortransport,
-            new SequelizeTransport({ sequelize })
+            new SequelizeTransport({ sequelize, level: `${myConfiglevelsKeyArray[myConfiglevelsKeyArray.length - 1]}`})
+
           ]
 }
 
