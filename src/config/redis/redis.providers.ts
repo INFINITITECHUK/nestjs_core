@@ -1,17 +1,28 @@
 import { REDIS_CONNECTION } from '../constants';
 import { createClient } from 'redis';
 import 'dotenv/config';
-import { decrypt } from '@helpers/cipher';
 
-const IS_CRD_PLAIN = process.env.IS_CRD_PLAIN == 'true' ? true : false
-const REDIS_HOST = IS_CRD_PLAIN ? process.env.REDIS_HOST : decrypt(process.env.REDIS_HOST)
-const REDIS_PORT = IS_CRD_PLAIN ? process.env.REDIS_PORT : decrypt(process.env.REDIS_PORT)
-
-
-const REDIS_URL = `redis://${REDIS_HOST}:${+(REDIS_PORT)}`;
+const REDIS_URL = `redis://${process.env.REDIS_HOST}:${parseInt(process.env.REDIS_PORT)}`;
+const REDIS_USERNAME = process.env.REDIS_USERNAME
+const REDIS_PASS = process.env.REDIS_PASS
 
 const createRedisClient = async () => {
-  let client = createClient({ url: REDIS_URL });
+  let client = null
+
+  if (REDIS_USERNAME && REDIS_PASS) {
+    client = createClient({ 
+      url: REDIS_URL, 
+      password: REDIS_PASS,
+      username: REDIS_USERNAME
+    })
+
+    console.log(`Redis crd : `, {REDIS_USERNAME, REDIS_PASS})
+  }
+  else {
+    client = createClient({ 
+      url: REDIS_URL
+    })
+  }
 
   console.log(`Redis url : `, REDIS_URL) 
 
@@ -47,7 +58,21 @@ const createRedisClient = async () => {
     const attemptReconnect = async () => {
       console.info('Reconnecting to Redis...');
       try {
-        client = createClient({ url: REDIS_URL });
+        if (REDIS_USERNAME && REDIS_PASS) {
+          client = createClient({ 
+            url: REDIS_URL, 
+            password: REDIS_PASS,
+            username: REDIS_USERNAME
+          })
+      
+          console.log(`Redis crd : `, {REDIS_USERNAME, REDIS_PASS})
+        }
+        else {
+          client = createClient({ 
+            url: REDIS_URL
+          })
+        }
+
         await client.connect();
         console.info('Reconnected to Redis successfully.');
       } catch (reconnectErr) {
